@@ -1,5 +1,6 @@
 import { availibleItems } from "./stores";
 import type { Item } from "./stores";
+import { PUBLIC_SERVER_URL } from "$env/static/public";
 
 export function isTouching(el1: HTMLElement, el2: HTMLElement) {
 	const rect1 = el1.getBoundingClientRect();
@@ -15,7 +16,7 @@ export function isTouching(el1: HTMLElement, el2: HTMLElement) {
 
 export async function craft(item1: Item, item2: Item): Promise<Item> {
 	let result = (await (
-		await fetch("http://localhost:5173/api/createNewItem", {
+		await fetch(PUBLIC_SERVER_URL + "/api/createNewItem", {
 			method: "POST",
 			headers: {
 				"content-type": "application/json",
