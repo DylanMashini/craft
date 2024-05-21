@@ -2,29 +2,87 @@ import type { RequestHandler } from "./$types";
 import type { Item } from "$lib/stores";
 import OpenAI from "openai";
 import { OPENAI_API_KEY } from "$env/static/private";
-import { json } from "@sveltejs/kit";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { error, json } from "@sveltejs/kit";
+import { Connect } from "vite";
 
-function splitEmojisAndText(str) {
-	// Regular expression to match all emoji characters
-	const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu;
-	let emojiMatch;
-	let emojiString = "";
-	let textStartIndex = 0;
+const prisma = new PrismaClient();
 
-	while ((emojiMatch = emojiRegex.exec(str)) !== null) {
-		// Append the matched emoji to the emoji string
-		emojiString += emojiMatch[0];
-		// Update the starting index of the remaining text
-		textStartIndex = emojiRegex.lastIndex;
+async function queryDbForRecipe(
+	item1: Item,
+	item2: Item
+): Promise<Item | undefined> {
+	const recipe = await prisma.recipe.findFirst({
+		where: {
+			OR: [
+				{
+					inputItem1: {
+						name: item1.name,
+					},
+					inputItem2: {
+						name: item2.name,
+					},
+				},
+				{
+					inputItem1: {
+						name: item2.name,
+					},
+					inputItem2: {
+						name: item1.name,
+					},
+				},
+			],
+		},
+		include: {
+			inputItem1: true,
+			inputItem2: true,
+			outputItem: true,
+		},
+	});
+
+	if (recipe) {
+		return {
+			name: recipe.outputItem.name,
+			emoji: recipe.outputItem.emoji,
+		};
 	}
+}
 
-	// Get the remaining text after the sequence of emojis
-	const remainingText = str.slice(textStartIndex);
+const upsertItemFromDb = async (item: Item) => {
+	const existingItem = await prisma.item.findUnique({
+		where: { name: item.name },
+	});
 
-	return {
-		emojis: emojiString,
-		text: remainingText,
-	};
+	if (existingItem) {
+		return existingItem;
+	} else {
+		return prisma.item.create({
+			data: { name: item.name, emoji: item.emoji },
+		});
+	}
+};
+
+async function addRecipeToDB(item1: Item, item2: Item, outputItem: Item) {
+	// Add or retrive items from DB
+	let [item1Record, item2Record, outputItemRecord] = await Promise.all([
+		upsertItemFromDb(item1),
+		upsertItemFromDb(item2),
+		upsertItemFromDb(outputItem),
+	]);
+
+	let outputEmoji = outputItemRecord.emoji;
+
+	await prisma.recipe.create({
+		data: {
+			inputItem1: { connect: { id: item1Record.id } },
+			// inputItem1Id: item1Record.id,
+			inputItem2: { connect: { id: item2Record.id } },
+			// inputItem2Id: item2Record.id,
+			outputItem: { connect: { id: outputItemRecord.id } },
+			// outputItemId: outputItemRecord.id,
+		},
+	});
+	return outputEmoji;
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -34,15 +92,22 @@ export const POST: RequestHandler = async ({ request }) => {
 		apiKey: OPENAI_API_KEY,
 	});
 
+	const db_response = await queryDbForRecipe(item1, item2);
+
+	if (db_response) {
+		return json(db_response);
+	}
+
 	const response = await openai.chat.completions.create({
-		model: "gpt-3.5-turbo",
+		model: "gpt-4",
 		messages: [
 			{
 				role: "system",
+				// @ts-ignore
 				content: [
 					{
 						type: "text",
-						text: 'You are an Artificial Intelligence For a Game where the user combines items to "craft" new ones. Each Item is a series of emojis, and has a name. Your input will consist of two items to be crafted into a third, new item. For example, "💧Water AND 🌎Earth"  might combine into "🌱Plant".  Your output should only consist of the output emojis, and the name. Here are a few tips for your generation:\n1. They should be interesting, and useful for further crafting. Try to avoid abstract ideas.\n2. They should follow common sense, but still be interesting. Prefer fundamental building blocks, instead of being correct. \n3. The series of emojis should be the ones that most accurately depict what you are trying to repersent. It is critical that the emoji used looks like what the word is. The emoji has nothing to do with combining the two inital emojis, it should repersent what the resultant word\'s meaning is.',
+						text: 'You are an Artificial Intelligence For a Game where the user combines items to "craft" new ones. Each Item is between one and two, and has a name. Your input will consist of two items to be crafted into a third, new item. For example, "💧Water AND 🌎Earth" might combine into "🌱Plant".  Your response should only consist of the output emojis, and the name. Here are a few tips for your generation:\n1. They should be interesting, and useful for further crafting. Try to avoid abstract ideas.\n2. They should follow common sense, but still be interesting. Prefer fundamental building blocks, instead of being correct. \n3. The series of emojis should be the ones that most accurately depict what you are trying to repersent. It is critical that the emoji used looks like what the word is. The emoji has nothing to do with combining the two inital emojis, it should repersent what the resultant word\'s meaning is as closely as possible.',
 					},
 				],
 			},
@@ -62,7 +127,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			},
 		],
 		temperature: 0,
-		max_tokens: 10,
+		max_tokens: 50,
 		top_p: 1,
 		frequency_penalty: 0,
 		presence_penalty: 0,
@@ -70,6 +135,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	});
 
 	let res = response.choices[0].message.content;
+
+	if (res === null) return error(500);
 
 	// Regular expression to match all emojis at the beginning of the string
 	let emojiRegex =
@@ -82,6 +149,12 @@ export const POST: RequestHandler = async ({ request }) => {
 	let emoji = emojis ? emojis.join("") : "";
 	// Remove the emojis from the original string to get the text part
 	let name = res.replace(emojiRegex, "");
+
+	// Update emoji to be what was in DB if there was already a DB record
+	emoji = await addRecipeToDB(item1, item2, {
+		emoji,
+		name,
+	});
 
 	return json({
 		emoji,

@@ -26,3 +26,14 @@ let initalItems: Item[] = [
 ];
 
 export let availibleItems: Writable<Item[]> = writable(initalItems);
+
+if (typeof window !== "undefined") {
+	let storedRecipes = localStorage.getItem("unlockedRecipes");
+	if (storedRecipes) {
+		availibleItems.set(JSON.parse(storedRecipes));
+	}
+
+	availibleItems.subscribe(val => {
+		localStorage.setItem("unlockedRecipes", JSON.stringify(val));
+	});
+}

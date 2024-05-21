@@ -28,7 +28,11 @@ export async function craft(item1: Item, item2: Item): Promise<Item> {
 	).json()) as Item;
 
 	availibleItems.update(items => {
-		items.push(result);
+		if (
+			typeof items.find(val => val.name === result.name) === "undefined"
+		) {
+			items.push(result);
+		}
 		return items;
 	});
 

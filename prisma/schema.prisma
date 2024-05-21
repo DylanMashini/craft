@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id            BigInt   @id @default(autoincrement())
+  name          String   @unique
+  emoji         String
+  // One-to-many relationship with Recipe for inputItem1 and inputItem2
+  recipesInput1 Recipe[] @relation("input1Items")
+  recipesInput2 Recipe[] @relation("input2Items")
+  // One-to-many relationship with Recipe for outputItem
+  recipesOutput Recipe[] @relation("outputItems")
+}
+
+model Recipe {
+  id           BigInt @id @default(autoincrement())
+  inputItem1   Item   @relation("input1Items", fields: [inputItem1Id], references: [id])
+  inputItem1Id BigInt
+  inputItem2   Item   @relation("input2Items", fields: [inputItem2Id], references: [id])
+  inputItem2Id BigInt
+  outputItem   Item   @relation("outputItems", fields: [outputItemId], references: [id])
+  outputItemId BigInt
+}

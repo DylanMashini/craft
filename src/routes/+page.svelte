@@ -3,8 +3,10 @@
 	import { availibleItems } from "$lib/stores";
 	import { isTouching, craft } from "$lib/utils";
 	import type { DragEventData } from "@neodrag/svelte";
+	import { tick } from "svelte";
 
 	let itemParent: HTMLDivElement;
+	let deleteBox: HTMLDivElement;
 
 	let draggedElements: {
 		emoji: string;
@@ -44,6 +46,8 @@
 
 		let id = draggedElements[index].id;
 
+		document.body.classList.add("dragging");
+
 		function updatePosition(event: any) {
 			if (draggedElements[index].id !== id) {
 				index = draggedElements.findIndex(val => val.id === id);
@@ -60,18 +64,25 @@
 
 		addEventListener("mousemove", updatePosition);
 
-		addEventListener("mouseup", () => {
-			removeEventListener("mousemove", updatePosition);
-			document.body.style.userSelect = "";
-			if (draggedElements[index].id !== id) {
-				index = draggedElements.findIndex(val => val.id === id);
-				if (index === -1) {
-					return;
+		addEventListener(
+			"mouseup",
+			() => {
+				removeEventListener("mousemove", updatePosition);
+				document.body.style.userSelect = "";
+				document.body.classList.remove("dragging");
+				if (draggedElements[index].id !== id) {
+					index = draggedElements.findIndex(val => val.id === id);
+					if (index === -1) {
+						return;
+					}
 				}
+				draggedElements[index].controlled = false;
+				checkCollisionsToCraft();
+			},
+			{
+				once: true,
 			}
-			draggedElements[index].controlled = false;
-			checkCollisionsToCraft();
-		});
+		);
 	};
 
 	// Returns Indexes of Collided Objects
@@ -97,14 +108,31 @@
 
 	const checkCollisionsWhileDragging = () => {
 		let collidedElements = checkCollisions();
-		draggedElements.forEach(val => (val.highlighted = false));
+		for (let i = 0; i < draggedElements.length; i++) {
+			draggedElements[i].highlighted = false;
+		}
 		if (collidedElements.length !== 0) {
 			draggedElements[collidedElements[0]].highlighted = true;
 			draggedElements[collidedElements[1]].highlighted = true;
 		}
+		draggedElements = draggedElements;
 	};
 
 	const checkCollisionsToCraft = async () => {
+		// First, check if any of items are in gray box, if so delete
+		let idsToDelete = [];
+		for (let i = 0; i < draggedElements.length; i++) {
+			if (typeof draggedElements[i].element === "undefined") continue;
+			// @ts-ignore
+			if (isTouching(draggedElements[i].element, deleteBox)) {
+				idsToDelete.push(draggedElements[i].id);
+			}
+		}
+
+		draggedElements = draggedElements.filter(
+			val => !idsToDelete.includes(val.id)
+		);
+
 		let collisions = checkCollisions();
 		if (
 			collisions.length === 0 ||
@@ -146,14 +174,16 @@
 				Y: avgY,
 			},
 		];
+		// Update highlights
+		setTimeout(() => checkCollisionsWhileDragging(), 200);
 	};
 </script>
 
 <div class="w-screen h-screen flex">
 	<div class="gap-4 flex flex-wrap p-2"></div>
 	<div class="w-[70%]"></div>
-	<div class="w-[30%] bg-gray-100">
-		<h2 class="text-4xl w-full text-center mt-4">Items</h2>
+	<div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
+		<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
 		<div
 			class="gap-4 flex flex-wrap w-full p-2 relative"
 			bind:this={itemParent}
@@ -161,9 +191,8 @@
 			{#each draggedElements as element (element.id)}
 				<div
 					bind:this={element.element}
-					class="item absolute {element.highlighted
-						? '!bg-gray-100'
-						: ''}"
+					class="item absolute {element.highlighted &&
+						'!bg-gray-100'}"
 					use:draggable={{
 						position: element.controlled
 							? {
@@ -177,6 +206,7 @@
 									y: element.Y,
 								}
 							: undefined,
+						defaultClassDragging: "dragging",
 					}}
 					on:neodrag={checkCollisionsWhileDragging}
 					on:neodrag:end={checkCollisionsToCraft}
@@ -210,6 +240,10 @@
 
 <style lang="postcss">
 	.item {
-		@apply px-4 py-2 border rounded-md bg-white;
+		@apply px-4 py-2 border rounded-md bg-white cursor-grab;
+	}
+
+	:global(.dragging) {
+		@apply !cursor-grabbing;
 	}
 </style>
