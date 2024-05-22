@@ -289,6 +289,11 @@
           against the clock to find a random item's crafting recipe. If you want
           to delete something you dragged out, just drag it into the grey box on
           the right.
+
+		  <br>
+		  <br>
+
+		  Don't worry, your discoveries are saved in your browser, so you can come back and continue where you left off. 
         </div>
         <div class="">
           <Info />
