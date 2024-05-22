@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { draggable } from "@neodrag/svelte";
-	import { availibleItems, type Item } from "$lib/stores";
+	import {
+		availibleItems,
+		type Item,
+		showNewDiscoveryPopup,
+	} from "$lib/stores";
 	import { isTouching, craft } from "$lib/utils";
 	import { PUBLIC_SERVER_URL } from "$env/static/public";
 	import Info from "$lib/icons/Info.svelte";
@@ -422,6 +426,20 @@
 			/>
 		</div>
 	</div>
+	{#if typeof $showNewDiscoveryPopup === "string"}
+		<div
+			class="absolute w-96 h-36 bottom-6 left-6 bg-white border rounded-md p-4 flex items-center justify-center popup"
+			transition:fade={{ duration: 400 }}
+		>
+			<div class="text-center">
+				<h2 class="text-xl font-bold mb-2">New Discovery!</h2>
+				<p class="text-gray-700">You have discovered a new item:</p>
+				<p class="text-lg font-semibold text-blue-600">
+					{$showNewDiscoveryPopup}
+				</p>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style lang="postcss">

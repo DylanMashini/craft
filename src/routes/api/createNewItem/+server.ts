@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import { OPENAI_API_KEY } from "$env/static/private";
 import { PrismaClient } from "@prisma/client";
 import { error, json } from "@sveltejs/kit";
-import { env } from '$env/dynamic/private';
+import { env } from "$env/dynamic/private";
 
 const prisma = new PrismaClient();
 
@@ -164,8 +164,11 @@ export const POST: RequestHandler = async ({ request }) => {
 	// Remove the emojis from the original string to get the text part
 	let name = res.replace(emojiRegex, "");
 	// For some reason, this charecter ends up in the name from time to time
-	name = name.replaceAll("‍♂️", "")
+	name = name.replaceAll("‍♂️", "");
 
+	while (name.charAt(0) === " ") {
+		name = name.replace(" ", "");
+	}
 	// Update emoji to be what was in DB if there was already a DB record
 	let dbResult = await addRecipeToDB(item1, item2, {
 		emoji,
