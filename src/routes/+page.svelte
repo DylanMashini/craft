@@ -221,7 +221,7 @@
 		});
 
 		let interval1ID = setInterval(() => {
-			remainingTime = Math.round(120 - (Date.now() - startTime) / 1000);
+			remainingTime = Math.round(5 - (Date.now() - startTime) / 1000);
 			if (remainingTime < 0) {
 				clearInterval(interval1ID);
 				clearInterval(interval2ID);
