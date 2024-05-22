@@ -34,7 +34,7 @@ export async function craft(item1: Item, item2: Item): Promise<Item> {
 
 	if (result.newDiscovery) {
 		firstDiscoveries.update(val => val + 1);
-		showNewDiscoveryPopup.set(result.name);
+		showNewDiscoveryPopup.set(result.emoji + " " + result.name);
 		setTimeout(() => showNewDiscoveryPopup.set(false), 3000);
 	}
 	result.newDiscovery = undefined;
