@@ -2,9 +2,8 @@
 	import { draggable } from "@neodrag/svelte";
 	import { availibleItems, type Item } from "$lib/stores";
 	import { isTouching, craft } from "$lib/utils";
-	import type { DragEventData } from "@neodrag/svelte";
-	import { tick } from "svelte";
 	import { PUBLIC_SERVER_URL } from "$env/static/public";
+	import Info from "./Info.svelte";
 
 	let itemParent: HTMLDivElement;
 	let deleteBox: HTMLDivElement;
@@ -204,11 +203,38 @@
 		startTime = Date.now();
 		remainingTime = 120;
 		let red = false;
-		setInterval(() => {
+
+		availibleItems.subscribe(val => {
+			if (timedMode) {
+				if (val.find(val => val.name === selectedItemTimed.name)) {
+					// User Won!!
+					alert("You Won!!!");
+					clearInterval(interval1ID);
+					clearInterval(interval2ID);
+					timedMode = false;
+					document.body.style.backgroundColor = "green";
+					setTimeout(() => {
+						document.body.style.backgroundColor = "white";
+					}, 5000);
+				}
+			}
+		});
+
+		let interval1ID = setInterval(() => {
 			remainingTime = Math.round(120 - (Date.now() - startTime) / 1000);
+			if (remainingTime < 0) {
+				clearInterval(interval1ID);
+				clearInterval(interval2ID);
+				document.body.style.backgroundColor = "red";
+				timedMode = false;
+				setTimeout(() => {
+					document.body.style.backgroundColor = "white";
+					remainingTime = 120;
+				}, 5000);
+			}
 		}, 10);
 
-		setInterval(() => {
+		let interval2ID = setInterval(() => {
 			if (remainingTime < 10) {
 				if (red) {
 					document.body.style.backgroundColor = "red";
@@ -223,14 +249,14 @@
 
 <div class="w-screen h-screen flex">
 	<div class="gap-4 flex flex-wrap p-2"></div>
-	<div class="w-[70%]">
+	<div class="w-[70%] relative">
 		{#if !timedMode}
 			<button
 				class="px-4 py-2 bg-blue-500 rounded-md mt-2 text-white"
 				on:click={startTimedMode}>Play Timed Mode!</button
 			>
-		{:else}
-			<h1>Time Left: {remainingTime}</h1>
+		{:else if remainingTime > 0}
+			<h1>Time Left: {remainingTime} seconds</h1>
 			{#if selectedItemTimed}
 				<div class="flex">
 					<div class="item !cursor-default">
@@ -239,7 +265,35 @@
 					</div>
 				</div>
 			{/if}
+		{:else}
+			<div class="flex">
+				<h1 class="text-4xl">You Lost!</h1>
+				<button
+					class="px-4 py-2 bg-blue-500 rounded-md mt-2 text-white"
+					on:click={startTimedMode}>Play Again!</button
+				>
+			</div>
 		{/if}
+
+		<div class="absolute bottom-4">
+			<div class="group">
+				<div
+					class="group-hover:block hidden mb-4 w-96 border-2 rounded-md p-4"
+				>
+					Welcome to Infinite Craft, a game hevily inspired by the
+					version on <a
+						href="https://neal.fun/infinite-craft/"
+						class="text-blue-500 underline">neal.fun</a
+					>
+					<br />
+					<br />
+					To Play...
+				</div>
+				<div class="">
+					<Info />
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
 		<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
