@@ -3,8 +3,9 @@
   import { availibleItems, type Item } from "$lib/stores";
   import { isTouching, craft } from "$lib/utils";
   import { PUBLIC_SERVER_URL } from "$env/static/public";
-  import Info from "./Info.svelte";
-  import Github from "./Github.svelte";
+  import Info from "$lib/icons/Info.svelte";
+  import Github from "$lib/icons/Github.svelte";
+  import Search from "$lib/icons/Search.svelte";
 
   let itemParent: HTMLDivElement;
   let deleteBox: HTMLDivElement;
@@ -13,6 +14,8 @@
   let startTime: number;
   let remainingTime: number;
   let selectedItemTimed: Item;
+
+  let search = "";
 
   let draggedElements: {
     emoji: string;
@@ -245,14 +248,24 @@
       }
     }, 250);
   };
+
+  const filterSearch = (items: Item[]) => {
+    if (search === "") {
+      return items;
+    }
+    return items.filter((val) => val.name.includes(search))
+  }
+
+  $: console.log(filteredAvailibleItems)
+
+  $: filteredAvailibleItems = filterSearch($availibleItems);
 </script>
 
 <svelte:head>
-	<title>Infininty Craft</title>
+  <title>Infininty Craft</title>
 </svelte:head>
 
 <div class="w-screen h-screen flex">
-  
   <div class="gap-4 flex flex-wrap p-2"></div>
   <div class="w-[70%] relative">
     {#if !timedMode}
@@ -316,57 +329,69 @@
       >
     </div>
   </div>
-  <div class="w-[30%] bg-gray-100 overflow-y-scroll overflow-x-visible" bind:this={deleteBox}>
-    <h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
+  <div class="w-[30%] bg-gray-100 overflow-y-scroll mb-8">
     <div
-      class="gap-4 flex flex-wrap w-full p-2 "
-      bind:this={itemParent}
+      class="overflow-y-scroll overflow-x-visible w-full"
+      bind:this={deleteBox}
     >
-      {#each draggedElements as element (element.id)}
-        <div
-          bind:this={element.element}
-          class="item absolute {element.highlighted && '!bg-gray-100'}"
-          use:draggable={{
-            position: element.controlled
-              ? {
-                  x: element.X,
-                  y: element.Y,
-                }
-              : undefined,
-            defaultPosition: !element.controlled
-              ? {
-                  x: element.X,
-                  y: element.Y,
-                }
-              : undefined,
-            defaultClassDragging: "dragging",
-          }}
-          on:neodrag={checkCollisionsWhileDragging}
-          on:neodrag:end={checkCollisionsToCraft}
-        >
-          {element.emoji}
-          {element.name}
-        </div>
-      {/each}
-      {#each $availibleItems as item}
-        <div id="item-parent-{item.name.replaceAll(' ', '_')}">
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
+      <div class="gap-4 flex flex-wrap w-full p-2" bind:this={itemParent}>
+        {#each draggedElements as element (element.id)}
           <div
-            class="item"
-            on:mousedown={(e) =>
-              dragStart(
-                item.emoji,
-                item.name,
-                e.clientX - itemParent.offsetLeft,
-                e.clientY - itemParent.offsetTop
-              )}
+            bind:this={element.element}
+            class="item absolute {element.highlighted && '!bg-gray-100'}"
+            use:draggable={{
+              position: element.controlled
+                ? {
+                    x: element.X,
+                    y: element.Y,
+                  }
+                : undefined,
+              defaultPosition: !element.controlled
+                ? {
+                    x: element.X,
+                    y: element.Y,
+                  }
+                : undefined,
+              defaultClassDragging: "dragging",
+            }}
+            on:neodrag={checkCollisionsWhileDragging}
+            on:neodrag:end={checkCollisionsToCraft}
           >
-            {item.emoji}
-            {item.name}
+            {element.emoji}
+            {element.name}
           </div>
-        </div>
-      {/each}
+        {/each}
+        {#each filteredAvailibleItems as item}
+          <div id="item-parent-{item.name.replaceAll(' ', '_')}">
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div
+              class="item"
+              on:mousedown={(e) =>
+                dragStart(
+                  item.emoji,
+                  item.name,
+                  e.clientX - itemParent.offsetLeft,
+                  e.clientY - itemParent.offsetTop
+                )}
+            >
+              {item.emoji}
+              {item.name}
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+    <div class="h-8 bg-white absolute bottom-0 w-[30%] flex items-center overflow-x-clip right-0">
+      <div class="mr-3 ml-2">
+        <Search />
+      </div>
+      <input
+        class="w-[calc(30%-1.25rem-1em)] my-0 text-sm h-full rounded-md search"
+        bind:value={search}
+        placeholder="Search"
+      />
     </div>
   </div>
 </div>
@@ -378,5 +403,9 @@
 
   :global(.dragging) {
     @apply !cursor-grabbing;
+  }
+
+  .search:focus {
+    outline: none;
   }
 </style>
