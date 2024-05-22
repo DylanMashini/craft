@@ -38,7 +38,7 @@ export async function craft(item1: Item, item2: Item): Promise<Item> {
   result = result as Item;
 
   availibleItems.update((items) => {
-    if (typeof items.find((val) => val.name === result.name) === "undefined") {
+    if (typeof items.find((val) => val.name === result.name) === "undefined" && result.name) {
       items.push(result);
     }
     return items;
