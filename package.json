@@ -29,9 +29,7 @@
 		"@neodrag/svelte": "^2.0.6",
 		"@prisma/client": "5.14.0",
 		"@sveltejs/adapter-netlify": "^4.2.0",
-		"openai": "^4.47.1"
-	},
-	"optionalDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "4.6.1"
+		"openai": "^4.47.1",
+		"@rollup/rollup-linux-x64-gnu": "^4.9.2"
 	}
 }
