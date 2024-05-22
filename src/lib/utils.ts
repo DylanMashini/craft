@@ -29,7 +29,7 @@ export async function craft(item1: Item, item2: Item): Promise<Item> {
 	).json();
 
 	if (result.newDiscovery) {
-		alert("First Discovery");
+		alert("You Just Made a First Discovery");
 		firstDiscoveries.update(val => val + 1);
 	}
 	result.newDiscovery = undefined;

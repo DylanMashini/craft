@@ -185,7 +185,7 @@
 	<div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
 		<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
 		<div
-			class="gap-4 flex flex-wrap w-full p-2 relative"
+			class="gap-4 flex flex-wrap w-full p-2 relative overflow-y-scroll"
 			bind:this={itemParent}
 		>
 			{#each draggedElements as element (element.id)}
