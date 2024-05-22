@@ -6,6 +6,8 @@
 	import Info from "$lib/icons/Info.svelte";
 	import Github from "$lib/icons/Github.svelte";
 	import Search from "$lib/icons/Search.svelte";
+	import Trash from "$lib/icons/Trash.svelte";
+	import { fade } from "svelte/transition";
 
 	let itemParent: HTMLDivElement;
 	let deleteBox: HTMLDivElement;
@@ -16,6 +18,8 @@
 	let selectedItemTimed: Item;
 
 	let search = "";
+
+	let deleting = false;
 
 	let draggedElements: {
 		emoji: string;
@@ -96,8 +100,15 @@
 
 	// Returns Indexes of Collided Objects
 	const checkCollisions = () => {
+		deleting = false;
 		for (let i = 0; i < draggedElements.length; i++) {
 			if (!draggedElements[i].element) continue;
+
+			// Check for each item if it is intersecting trash
+			// @ts-ignore
+			if (isTouching(draggedElements[i].element, deleteBox)) {
+				deleting = true;
+			}
 
 			for (let j = i + 1; j < draggedElements.length; j++) {
 				if (!draggedElements[j].element) continue;
@@ -336,6 +347,14 @@
 		</div>
 	</div>
 	<div class="w-[30%] bg-gray-100 overflow-y-scroll mb-8">
+		{#if deleting}
+			<div
+				class="absolute translate-x-1/2 right-[15%] top-1/2 -translate-y-1/2"
+				transition:fade={{ delay: 0, duration: 100 }}
+			>
+				<Trash />
+			</div>
+		{/if}
 		<div
 			class="overflow-y-scroll overflow-x-visible w-full [scrollbar-width:none]"
 			bind:this={deleteBox}
