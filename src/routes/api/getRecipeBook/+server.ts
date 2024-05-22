@@ -1,6 +1,7 @@
 import type { RequestHandler } from "./$types";
 import { json } from "@sveltejs/kit";
 import { PrismaClient } from "@prisma/client";
+import {dev} from "$app/environment"
 
 const prisma = new PrismaClient();
 
@@ -25,6 +26,7 @@ async function getAllRecipesFormatted(): Promise<string> {
 }
 
 export const GET: RequestHandler = async ({}) => {
+	if (!dev) return new Response("Not Authorized")
 	let res = await getAllRecipesFormatted();
 	return new Response(res);
 };
