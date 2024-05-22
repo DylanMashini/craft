@@ -99,19 +99,7 @@ async function addRecipeToDB(item1: Item, item2: Item, outputItem: Item) {
 	};
 }
 
-export const POST: RequestHandler = async ({ request }) => {
-	const { item1, item2 }: { item1: Item; item2: Item } = await request.json();
-
-	const openai = new OpenAI({
-		apiKey: OPENAI_API_KEY,
-	});
-
-	const db_response = await queryDbForRecipe(item1, item2);
-
-	if (db_response) {
-		return json(db_response);
-	}
-
+const generateGPT = async (item1, item2) => {
 	const response = await openai.chat.completions.create({
 		model: "gpt-3.5-turbo",
 		messages: [
@@ -121,7 +109,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				content: [
 					{
 						type: "text",
-						text: 'You are an Artificial Intelligence For a Game where the user combines items to "craft" new ones. Each Item is between one and two emojis, and has a name. Your input will consist of two items to be crafted into a third, new item. For example, "💧Water AND 🌎Earth" might combine into "🌱Plant".  Your response should only consist of the output emojis, and the name. Here are a few tips for your generation:\n1. They should be interesting, and useful for further crafting. Try to avoid abstract ideas.\n2. They should follow common sense, but still be interesting. Prefer fundamental building blocks, instead of being correct. \n3. The series of emojis should be the ones that most accurately depict what you are trying to repersent. It is critical that the emoji used looks like what the word is. The emoji has nothing to do with combining the two inital emojis, it should repersent what the resultant word\'s meaning is as closely as possible.',
+						text: 'You are an Artificial Intelligence For a Game where the user combines items to "craft" new ones. Each Item is between one and two emojis, and has a name. Your input will consist of two items to be crafted into a third, new item. For example, "💧Water AND 🌎Earth" might combine into "🌱Plant". The order of the input items does not matter, and should not be reflected in your response.  Your response should only consist of the output emojis, and the name. Here are a few tips for your generation:\n1. They should be interesting, and useful for further crafting. Try to avoid abstract ideas.\n2. They should follow common sense, but still be interesting. Prefer fundamental building blocks, instead of being correct. \n3. The series of emojis should be the ones that most accurately depict what you are trying to repersent. It is critical that the emoji used looks like what the word is. The emoji has nothing to do with combining the two inital emojis, it should repersent what the resultant word\'s meaning is as closely as possible.',
 					},
 				],
 			},
@@ -169,6 +157,32 @@ export const POST: RequestHandler = async ({ request }) => {
 	while (name.charAt(0) === " ") {
 		name = name.replace(" ", "");
 	}
+
+	if (name.length > 20) {
+		let { emoji, name } = generateGPT(item1, item2);
+	}
+
+	return {
+		emoji: emoji,
+		name: name,
+	};
+};
+
+export const POST: RequestHandler = async ({ request }) => {
+	const { item1, item2 }: { item1: Item; item2: Item } = await request.json();
+
+	const openai = new OpenAI({
+		apiKey: OPENAI_API_KEY,
+	});
+
+	const db_response = await queryDbForRecipe(item1, item2);
+
+	if (db_response) {
+		return json(db_response);
+	}
+
+	let { emoji, name } = generateGPT(item1, item2);
+
 	// Update emoji to be what was in DB if there was already a DB record
 	let dbResult = await addRecipeToDB(item1, item2, {
 		emoji,
