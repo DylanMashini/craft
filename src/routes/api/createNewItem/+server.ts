@@ -157,6 +157,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	let emoji = emojis ? emojis.join("") : "";
 	// Remove the emojis from the original string to get the text part
 	let name = res.replace(emojiRegex, "");
+	// For some reason, this charecter ends up in the name from time to time
+	name = name.replaceAll("‍♂️", "")
 
 	// Update emoji to be what was in DB if there was already a DB record
 	let dbResult = await addRecipeToDB(item1, item2, {
