@@ -206,14 +206,16 @@
       if (timedMode) {
         if (val.find((val) => val.name === selectedItemTimed.name)) {
           // User Won!!
-          alert("You Won!!!");
-          clearInterval(interval1ID);
-          clearInterval(interval2ID);
-          timedMode = false;
-          document.body.style.backgroundColor = "green";
           setTimeout(() => {
-            document.body.style.backgroundColor = "white";
-          }, 5000);
+            alert("You Won!!!");
+            clearInterval(interval1ID);
+            clearInterval(interval2ID);
+            timedMode = false;
+            document.body.style.backgroundColor = "green";
+            setTimeout(() => {
+              document.body.style.backgroundColor = "white";
+            }, 5000);
+          }, 100);
         }
       }
     });
@@ -290,10 +292,11 @@
           to delete something you dragged out, just drag it into the grey box on
           the right.
 
-		  <br>
-		  <br>
+          <br />
+          <br />
 
-		  Don't worry, your discoveries are saved in your browser, so you can come back and continue where you left off. 
+          Don't worry, your discoveries are saved in your browser, so you can
+          come back and continue where you left off.
         </div>
         <div class="">
           <Info />
@@ -301,7 +304,11 @@
       </div>
     </div>
     <div class="absolute bottom-4 right-4">
-      <a href="https://github.com/DylanMashini/craft" target="_blank" rel="noopener noreferrer"><Github /></a>
+      <a
+        href="https://github.com/DylanMashini/craft"
+        target="_blank"
+        rel="noopener noreferrer"><Github /></a
+      >
     </div>
   </div>
   <div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
