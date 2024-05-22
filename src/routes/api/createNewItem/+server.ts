@@ -4,7 +4,6 @@ import OpenAI from "openai";
 import { OPENAI_API_KEY } from "$env/static/private";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { error, json } from "@sveltejs/kit";
-import { Connect } from "vite";
 
 const prisma = new PrismaClient();
 
