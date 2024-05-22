@@ -1,5 +1,6 @@
 <script lang="ts">
-  let devMode = import.meta.env.MODE === "development";
+  import { dev as devMode } from "$app/environment";
+
   type Mode = "createRecipe" | "createItem" | "";
 
   let mode = "";
