@@ -184,8 +184,9 @@
 	<div class="w-[70%]"></div>
 	<div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
 		<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
+		<!-- Fix: When User has enough items to scroll, behavior is weird -->
 		<div
-			class="gap-4 flex flex-wrap w-full p-2 relative overflow-y-scroll"
+			class="gap-4 flex flex-wrap w-full p-2 relative"
 			bind:this={itemParent}
 		>
 			{#each draggedElements as element (element.id)}
