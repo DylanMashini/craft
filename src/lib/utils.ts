@@ -1,4 +1,4 @@
-import { availibleItems } from "./stores";
+import { availibleItems, firstDiscoveries } from "./stores";
 import type { Item } from "./stores";
 import { PUBLIC_SERVER_URL } from "$env/static/public";
 
@@ -15,7 +15,7 @@ export function isTouching(el1: HTMLElement, el2: HTMLElement) {
 }
 
 export async function craft(item1: Item, item2: Item): Promise<Item> {
-	let result = (await (
+	let result = await (
 		await fetch(PUBLIC_SERVER_URL + "/api/createNewItem", {
 			method: "POST",
 			headers: {
@@ -26,7 +26,14 @@ export async function craft(item1: Item, item2: Item): Promise<Item> {
 				item2,
 			}),
 		})
-	).json()) as Item;
+	).json();
+
+	if (result.newDiscovery) {
+		alert("First Discovery");
+		firstDiscoveries.update(val => val + 1);
+	}
+	result.newDiscovery = undefined;
+	result = result as Item;
 
 	availibleItems.update(items => {
 		if (

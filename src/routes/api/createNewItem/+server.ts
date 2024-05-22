@@ -2,7 +2,7 @@ import type { RequestHandler } from "./$types";
 import type { Item } from "$lib/stores";
 import OpenAI from "openai";
 import { OPENAI_API_KEY } from "$env/static/private";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { error, json } from "@sveltejs/kit";
 
 const prisma = new PrismaClient();
@@ -53,11 +53,17 @@ const upsertItemFromDb = async (item: Item) => {
 	});
 
 	if (existingItem) {
-		return existingItem;
+		return {
+			data: existingItem,
+			new: false,
+		};
 	} else {
-		return prisma.item.create({
-			data: { name: item.name, emoji: item.emoji },
-		});
+		return {
+			data: await prisma.item.create({
+				data: { name: item.name, emoji: item.emoji },
+			}),
+			new: true,
+		};
 	}
 };
 
@@ -69,19 +75,22 @@ async function addRecipeToDB(item1: Item, item2: Item, outputItem: Item) {
 		upsertItemFromDb(outputItem),
 	]);
 
-	let outputEmoji = outputItemRecord.emoji;
+	let outputEmoji = outputItemRecord.data.emoji;
 
 	await prisma.recipe.create({
 		data: {
-			inputItem1: { connect: { id: item1Record.id } },
+			inputItem1: { connect: { id: item1Record.data.id } },
 			// inputItem1Id: item1Record.id,
-			inputItem2: { connect: { id: item2Record.id } },
+			inputItem2: { connect: { id: item2Record.data.id } },
 			// inputItem2Id: item2Record.id,
-			outputItem: { connect: { id: outputItemRecord.id } },
+			outputItem: { connect: { id: outputItemRecord.data.id } },
 			// outputItemId: outputItemRecord.id,
 		},
 	});
-	return outputEmoji;
+	return {
+		emoji: outputEmoji,
+		new: outputItemRecord.new,
+	};
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -150,13 +159,16 @@ export const POST: RequestHandler = async ({ request }) => {
 	let name = res.replace(emojiRegex, "");
 
 	// Update emoji to be what was in DB if there was already a DB record
-	emoji = await addRecipeToDB(item1, item2, {
+	let dbResult = await addRecipeToDB(item1, item2, {
 		emoji,
 		name,
 	});
 
+	emoji = dbResult.emoji;
+
 	return json({
 		emoji,
 		name,
+		newDiscovery: dbResult.new,
 	});
 };

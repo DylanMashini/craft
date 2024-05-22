@@ -27,6 +27,8 @@ let initalItems: Item[] = [
 
 export let availibleItems: Writable<Item[]> = writable(initalItems);
 
+export let firstDiscoveries: Writable<number> = writable(0);
+
 if (typeof window !== "undefined") {
 	let storedRecipes = localStorage.getItem("unlockedRecipes");
 	if (storedRecipes) {
@@ -35,5 +37,14 @@ if (typeof window !== "undefined") {
 
 	availibleItems.subscribe(val => {
 		localStorage.setItem("unlockedRecipes", JSON.stringify(val));
+	});
+
+	let storedFirstDiscoveries = localStorage.getItem("firstDiscoveries");
+	if (storedFirstDiscoveries) {
+		firstDiscoveries.set(JSON.parse(storedFirstDiscoveries));
+	}
+
+	firstDiscoveries.subscribe(val => {
+		localStorage.setItem("firstDiscoveries", JSON.stringify(val));
 	});
 }
