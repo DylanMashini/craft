@@ -32,7 +32,9 @@ export let firstDiscoveries: Writable<number> = writable(0);
 if (typeof window !== "undefined") {
 	let storedRecipes = localStorage.getItem("unlockedRecipes");
 	if (storedRecipes) {
-		availibleItems.set(JSON.parse(storedRecipes));
+		try {
+			availibleItems.set(JSON.parse(storedRecipes));
+		} catch {}
 	}
 
 	availibleItems.subscribe(val => {
@@ -41,7 +43,9 @@ if (typeof window !== "undefined") {
 
 	let storedFirstDiscoveries = localStorage.getItem("firstDiscoveries");
 	if (storedFirstDiscoveries) {
-		firstDiscoveries.set(JSON.parse(storedFirstDiscoveries));
+		try {
+			firstDiscoveries.set(JSON.parse(storedFirstDiscoveries));
+		} catch {}
 	}
 
 	firstDiscoveries.subscribe(val => {
