@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
+		"preinstall": "rm -rf node_modules && rm -rf pnpm-lock.yml",
 		"dev": "vite dev",
 		"build": "prisma generate && vite build",
 		"preview": "vite preview",
