@@ -26,12 +26,19 @@
       })
     ).text();
   };
+
+  const unlockAllItems = async () => {
+    let items = await (await fetch("http://localhost:5173/api/edit/getItemsList")).text()
+
+    localStorage.setItem("unlockedRecipes", items);
+  }
 </script>
 
 {#if devMode}
   <div class="wrapper">
     <button on:click={() => (mode = "createRecipe")}>Create/Edit Recipe</button>
     <button on:click={() => (mode = "createItem")}>New Item</button>
+    <button on:click={unlockAllItems}>Unlock All Recipes</button>
   </div>
   <div class="mt-8 w-screen px-24">
     {#if mode === "createRecipe"}
