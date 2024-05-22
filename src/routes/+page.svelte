@@ -268,7 +268,7 @@
 	<title>Infininty Craft</title>
 </svelte:head>
 
-<div class="w-screen h-screen flex">
+<div class="w-screen h-screen flex max-h-screen">
 	<div class="gap-4 flex flex-wrap p-2"></div>
 	<div class="w-[70%] relative">
 		{#if !timedMode}
@@ -337,7 +337,7 @@
 	</div>
 	<div class="w-[30%] bg-gray-100 overflow-y-scroll mb-8">
 		<div
-			class="overflow-y-scroll overflow-x-visible w-full"
+			class="overflow-y-scroll overflow-x-visible w-full [scrollbar-width:none]"
 			bind:this={deleteBox}
 		>
 			<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
