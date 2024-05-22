@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { draggable } from "@neodrag/svelte";
-	import { availibleItems } from "$lib/stores";
+	import { availibleItems, type Item } from "$lib/stores";
 	import { isTouching, craft } from "$lib/utils";
 	import type { DragEventData } from "@neodrag/svelte";
 	import { tick } from "svelte";
+	import { PUBLIC_SERVER_URL } from "$env/static/public";
 
 	let itemParent: HTMLDivElement;
 	let deleteBox: HTMLDivElement;
+
+	let timedMode = false;
+	let startTime: number;
+	let remainingTime: number;
+	let selectedItemTimed: Item;
 
 	let draggedElements: {
 		emoji: string;
@@ -177,11 +183,64 @@
 		// Update highlights
 		setTimeout(() => checkCollisionsWhileDragging(), 200);
 	};
+
+	const startTimedMode = async () => {
+		// @ts-ignore
+		selectedItemTimed = {
+			name: "Water",
+		};
+		while (
+			typeof $availibleItems.find(
+				val => val.name === selectedItemTimed.name
+			) !== "undefined"
+		) {
+			selectedItemTimed = (await (
+				await fetch(PUBLIC_SERVER_URL + "/api/getRandomItem", {
+					method: "GET",
+				})
+			).json()) as Item;
+		}
+		timedMode = true;
+		startTime = Date.now();
+		remainingTime = 120;
+		let red = false;
+		setInterval(() => {
+			remainingTime = Math.round(120 - (Date.now() - startTime) / 1000);
+		}, 10);
+
+		setInterval(() => {
+			if (remainingTime < 10) {
+				if (red) {
+					document.body.style.backgroundColor = "red";
+				} else {
+					document.body.style.backgroundColor = "white";
+				}
+				red = !red;
+			}
+		}, 250);
+	};
 </script>
 
 <div class="w-screen h-screen flex">
 	<div class="gap-4 flex flex-wrap p-2"></div>
-	<div class="w-[70%]"></div>
+	<div class="w-[70%]">
+		{#if !timedMode}
+			<button
+				class="px-4 py-2 bg-blue-500 rounded-md mt-2 text-white"
+				on:click={startTimedMode}>Play Timed Mode!</button
+			>
+		{:else}
+			<h1>Time Left: {remainingTime}</h1>
+			{#if selectedItemTimed}
+				<div class="flex">
+					<div class="item !cursor-default">
+						{selectedItemTimed.emoji}
+						{selectedItemTimed.name}
+					</div>
+				</div>
+			{/if}
+		{/if}
+	</div>
 	<div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
 		<h2 class="text-4xl w-full text-center mt-4">Unlocked Items</h2>
 		<!-- Fix: When User has enough items to scroll, behavior is weird -->
