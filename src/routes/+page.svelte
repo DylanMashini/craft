@@ -247,6 +247,10 @@
   };
 </script>
 
+<svelte:head>
+	<title>Infininty Craft</title>
+</svelte:head>
+
 <div class="w-screen h-screen flex">
   <div class="gap-4 flex flex-wrap p-2"></div>
   <div class="w-[70%] relative">
