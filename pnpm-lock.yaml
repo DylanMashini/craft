@@ -23,10 +23,6 @@ importers:
       openai:
         specifier: ^4.47.1
         version: 4.47.1
-    optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: ^4.17.2
-        version: 4.17.2
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
