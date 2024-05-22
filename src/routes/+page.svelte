@@ -4,6 +4,7 @@
   import { isTouching, craft } from "$lib/utils";
   import { PUBLIC_SERVER_URL } from "$env/static/public";
   import Info from "./Info.svelte";
+  import Github from "./Github.svelte";
 
   let itemParent: HTMLDivElement;
   let deleteBox: HTMLDivElement;
@@ -293,6 +294,9 @@
           <Info />
         </div>
       </div>
+    </div>
+    <div class="absolute bottom-4 right-4">
+      <a href="https://github.com/DylanMashini/craft" target="_blank" rel="noopener noreferrer"><Github /></a>
     </div>
   </div>
   <div class="w-[30%] bg-gray-100" bind:this={deleteBox}>
