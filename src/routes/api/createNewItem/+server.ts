@@ -157,6 +157,7 @@ const generateGPT = async (item1, item2) => {
 	let name = res.replace(emojiRegex, "");
 	// For some reason, this charecter ends up in the name from time to time
 	name = name.replaceAll("‍♂️", "");
+	name.replaceAll("♀️", "");
 
 	while (name.charAt(0) === " ") {
 		name = name.replace(" ", "");
