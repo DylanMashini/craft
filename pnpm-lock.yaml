@@ -20,6 +20,10 @@ importers:
       openai:
         specifier: ^4.47.1
         version: 4.47.1
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.6.1
+        version: 4.6.1
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
@@ -334,6 +338,11 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.17.2':
     resolution: {integrity: sha512-Hy7pLwByUOuyaFC6mAr7m+oMC+V7qyifzs/nW2OJfC8H4hbCzOX07Ov0VFk/zP3kBsELWNFi7rJtgbKYsav9QQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rollup/rollup-linux-x64-gnu@4.6.1':
+    resolution: {integrity: sha512-DNGZvZDO5YF7jN5fX8ZqmGLjZEXIJRdJEdTFMhiyXqyXubBa0WVLDWSNlQ5JR2PNgDbEV1VQowhVRUh+74D+RA==}
     cpu: [x64]
     os: [linux]
 
@@ -1397,6 +1406,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-x64-gnu@4.17.2':
+    optional: true
+
+  '@rollup/rollup-linux-x64-gnu@4.6.1':
     optional: true
 
   '@rollup/rollup-linux-x64-musl@4.17.2':
