@@ -17,7 +17,7 @@ model Item {
   id            BigInt   @id @default(autoincrement())
   name          String   @unique
   emoji         String
-  dateCreated DateTime @default(now())
+  dateCreated   DateTime @default(now())
   // One-to-many relationship with Recipe for inputItem1 and inputItem2
   recipesInput1 Recipe[] @relation("input1Items")
   recipesInput2 Recipe[] @relation("input2Items")
@@ -26,12 +26,14 @@ model Item {
 }
 
 model Recipe {
-  id           BigInt @id @default(autoincrement())
-  dateCreated DateTime @default(now())
-  inputItem1   Item   @relation("input1Items", fields: [inputItem1Id], references: [id])
-  inputItem1Id BigInt
-  inputItem2   Item   @relation("input2Items", fields: [inputItem2Id], references: [id])
-  inputItem2Id BigInt
-  outputItem   Item   @relation("outputItems", fields: [outputItemId], references: [id])
-  outputItemId BigInt
+  id            BigInt   @id @default(autoincrement())
+  dateCreated   DateTime @default(now())
+  inputItem1    Item     @relation("input1Items", fields: [inputItem1Id], references: [id])
+  inputItem1Id  BigInt
+  inputItem2    Item     @relation("input2Items", fields: [inputItem2Id], references: [id])
+  inputItem2Id  BigInt
+  outputItem    Item     @relation("outputItems", fields: [outputItemId], references: [id])
+  outputItemId  BigInt
+  humanReviewed Boolean  @default(false)
+  highQuality   Boolean  @default(false)
 }
